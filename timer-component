@@ -1,0 +1,215 @@
+{% comment %} Timer Component Snippet Filename: timer-component.liquid {% endcomment %}
+
+<style>
+  .timer-component {
+    font: var(--text-font-style) var(--text-font-weight) var(--text-base) / 1.6 var(--text-font-family);
+    letter-spacing: var(--text-letter-spacing);
+    text-align: center;
+    padding: var(--spacing-6);
+  }
+
+  .timer-rich-text {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .timer-display {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .timer-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-2) var(--spacing-3);
+    border: 1px solid rgb(var(--text-color) / 0.12);
+    border-radius: 5px;
+    min-width: 50px; /* Increased for better visual balance */
+  }
+
+  .timer-value {
+    font-size: 1.5rem; /* Increased for prominence */
+    font-weight: 600; /* Slightly bolder */
+  }
+
+  .timer-label {
+    font-size: 0.85rem; /* Slightly larger for better readability */
+    margin-top: var(--spacing-1);
+    color: rgb(var(--text-color) / 0.7); /* Lighter color for label */
+  }
+
+  .timer-message {
+    margin-top: var(--spacing-4);
+    font-weight: 500;
+  }
+  
+</style>
+<div class="timer-component" data-timer-end="{{ section.settings.end_date | date: '%s' }}">
+  <h2 class="timer-title">{{ section.settings.title }}</h2>
+  <div class="timer-rich-text">
+    {{ section.settings.rich_text }}
+  </div>
+  <div class="timer-display">
+    <div class="timer-unit">
+      <span class="timer-value days"></span>
+      <span class="timer-label">{{ section.settings.days_label }}</span>
+    </div>
+    <div class="timer-unit">
+      <span class="timer-value hours"></span>
+      <span class="timer-label">{{ section.settings.hours_label }}</span>
+    </div>
+    <div class="timer-unit">
+      <span class="timer-value minutes"></span>
+      <span class="timer-label">{{ section.settings.minutes_label }}</span>
+    </div>
+    <div class="timer-unit">
+      <span class="timer-value seconds"></span>
+      <span class="timer-label">{{ section.settings.seconds_label }}</span>
+    </div>
+  </div>
+  {% if section.settings.show_message_on_end %}
+    <div class="timer-message" style="display: none;">{{ section.settings.end_message }}</div>
+  {% endif %}
+  <div class="timer-buttons">
+    <button class="primary-button">{{ section.settings.primary_button_label }}</button>
+    <button class="secondary-button">{{ section.settings.secondary_button_label }}</button>
+  </div>
+</div>
+  {% if section.settings.show_message_on_end %}
+    <div class="timer-message" style="display: none;">{{ section.settings.end_message }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const timers = document.querySelectorAll('.timer-component');
+
+    timers.forEach(timer => {
+      const endDate = parseInt(timer.dataset.timerEnd) * 1000;
+      const daysDisplay = timer.querySelector('.days');
+      const hoursDisplay = timer.querySelector('.hours');
+      const minutesDisplay = timer.querySelector('.minutes');
+      const secondsDisplay = timer.querySelector('.seconds');
+      const messageDisplay = timer.querySelector('.timer-message');
+
+      function formatTime(time) {
+        return time < 10 ? '0' + time : time;
+      }
+
+      function updateTimer() {
+        const now = new Date().getTime();
+        const distance = endDate - now;
+
+        if (distance <= 0) {
+          clearInterval(interval);
+          daysDisplay.textContent = '00';
+          hoursDisplay.textContent = '00';
+          minutesDisplay.textContent = '00';
+          secondsDisplay.textContent = '00';
+
+          if (messageDisplay) {
+            messageDisplay.style.display = 'block';
+          }
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        daysDisplay.textContent = formatTime(days);
+        hoursDisplay.textContent = formatTime(hours);
+        minutesDisplay.textContent = formatTime(minutes);
+        secondsDisplay.textContent = formatTime(seconds);
+      }
+
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Timer Component",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Countdown Timer"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Rich Text",
+      "default": "<p>Countdown to a special event</p>"
+    },
+    {
+      "type": "text",
+      "id": "end_date",
+      "label": "End Date"
+    },
+    {
+      "type": "text",
+      "id": "days_label",
+      "label": "Days Label",
+      "default": "Days"
+    },
+    {
+      "type": "text",
+      "id": "hours_label",
+      "label": "Hours Label",
+      "default": "Hours"
+    },
+    {
+      "type": "text",
+      "id": "minutes_label",
+      "label": "Minutes Label",
+      "default": "Minutes"
+    },
+    {
+      "type": "text",
+      "id": "seconds_label",
+      "label": "Seconds Label",
+      "default": "Seconds"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_message_on_end",
+      "label": "Show Message on End",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "end_message",
+      "label": "End Message",
+      "default": "Time's up!"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Primary Button Label",
+      "default": "Click Me"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Secondary Button Label",
+      "default": "Learn More"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Timer Component",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
